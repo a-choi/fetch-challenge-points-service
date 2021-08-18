@@ -4,6 +4,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.util.Objects;
 import java.util.Set;
+import javax.validation.Valid;
+import lombok.SneakyThrows;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,15 +38,16 @@ public class PointsController {
   @PostMapping
   public TransactionResponse addTransaction(
       @PathVariable(required = false) final Long userId,
-      @RequestBody final TransactionRequest transactionRequest
+      @Valid @RequestBody final TransactionRequest transactionRequest
   ) {
     return pointsService.addTransaction(Objects.requireNonNullElse(userId, DEFAULT_USER_ID), transactionRequest);
   }
 
+  @SneakyThrows
   @PatchMapping
   public Set<UserSpendResponse> spendPoints(
       @PathVariable(required = false) final Long userId,
-      @RequestBody final UserSpendRequest userSpendRequest
+      @Valid @RequestBody final UserSpendRequest userSpendRequest
   ) {
     return pointsService.spendPoints(Objects.requireNonNullElse(userId, DEFAULT_USER_ID), userSpendRequest);
   }

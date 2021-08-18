@@ -1,14 +1,15 @@
 package pointsservice.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
+import javax.transaction.InvalidTransactionException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -48,12 +49,7 @@ class PointsServiceIntegrationTest {
 
   @BeforeEach
   void setUp() {
-    pointsService = new PointsService(
-        userRepository,
-        payerRepository,
-        balanceRepository,
-        transactionRepository
-    );
+    pointsService = new PointsService(userRepository, payerRepository, balanceRepository, transactionRepository);
   }
 
   @Test
@@ -76,24 +72,22 @@ class PointsServiceIntegrationTest {
     assertThat(userRepository.getById(user.getUserId()).getTransactions()).isEmpty();
     assertThat(transactionRepository.count()).isZero();
 
-    final TransactionResponse response = pointsService.addTransaction(
+    final var response = pointsService.addTransaction(
         user.getUserId(),
         new TransactionRequest(payer.getPayerName(), transactionPoints, timestamp)
     );
-    final TransactionResponse expectedResponse = TransactionResponse.builder()
+    final var expectedResponse = TransactionResponse.builder()
         .payerName(payerName)
         .transactionPoints(transactionPoints)
         .totalPoints(originalBalance + transactionPoints)
         .timestamp(timestamp)
         .build();
-    final BalanceEntity expectedBalance = new BalanceEntity(
+    final var expectedBalance = new BalanceEntity(
         originalBalance + transactionPoints,
         user, payer
     );
     assertThat(response).usingRecursiveComparison().isEqualTo(expectedResponse);
-    assertThat(balanceRepository.getById(new BalanceId(user.getUserId(), payer.getPayerId())))
-        .usingRecursiveComparison()
-        .isEqualTo(expectedBalance);
+    assertThat(balanceRepository.getById(new BalanceId(user.getUserId(), payer.getPayerId()))).usingRecursiveComparison().isEqualTo(expectedBalance);
     assertThat(userRepository.getById(user.getUserId()).getBalances().size()).isEqualTo(1);
     assertThat(userRepository.getById(user.getUserId()).getTransactions().size()).isEqualTo(1);
     assertThat(transactionRepository.count()).isEqualTo(1);
@@ -123,17 +117,10 @@ class PointsServiceIntegrationTest {
         .totalPoints(transactionPoints)
         .timestamp(timestamp)
         .build();
-    final BalanceEntity expectedBalance = new BalanceEntity(
-        transactionPoints,
-        user, payer
-    );
+    final BalanceEntity expectedBalance = new BalanceEntity(transactionPoints, user, payer);
     assertThat(response).usingRecursiveComparison().isEqualTo(expectedResponse);
-    assertThat(balanceRepository.getById(new BalanceId(user.getUserId(), payer.getPayerId())))
-        .usingRecursiveComparison()
-        .isEqualTo(expectedBalance);
-    assertThat(userRepository.getById(user.getUserId()).getBalances())
-        .usingRecursiveFieldByFieldElementComparator()
-        .containsExactly(expectedBalance);
+    assertThat(balanceRepository.getById(new BalanceId(user.getUserId(), payer.getPayerId()))).usingRecursiveComparison().isEqualTo(expectedBalance);
+    assertThat(userRepository.getById(user.getUserId()).getBalances()).usingRecursiveFieldByFieldElementComparator().containsExactly(expectedBalance);
   }
 
   @Test
@@ -208,6 +195,36 @@ class PointsServiceIntegrationTest {
         .isEqualTo(600);
     assertThat(balanceRepository.getById(new BalanceId(user.getUserId(), payerToSkip.getPayerId())).getPointBalance())
         .isEqualTo(199);
+  }
+
+  @Test
+  void spendPoints_PointsRemainingFromDeductions_ThrowsInvalidTransactionException() {
+    final UserEntity user = UserEntity.builder().build();
+    final PayerEntity payer = PayerEntity.builder().payerName("payerName").build();
+    final PayerEntity payer2 = PayerEntity.builder().payerName("payer2").build();
+    final BalanceEntity balance = BalanceEntity.builder().user(user).payer(payer).pointBalance(6L).build();
+    final BalanceEntity balance2 = BalanceEntity.builder().user(user).payer(payer2).pointBalance(3L).build();
+    final TransactionEntity transaction = TransactionEntity.builder()
+        .transactionPoints(6L)
+        .timestamp(Date.from(Instant.parse("2020-10-01T12:00:00Z")))
+        .balance(balance).build();
+    final TransactionEntity transactionToSkip = TransactionEntity.builder()
+        .transactionPoints(4L)
+        .timestamp(Date.from(Instant.parse("2020-11-01T12:00:00Z"))).balance(balance2).build();
+    user.setBalances(Set.of(balance, balance2));
+    user.setTransactions(Arrays.asList(transaction, transactionToSkip));
+
+    testEntityManager.persist(user);
+    testEntityManager.persist(payer);
+    testEntityManager.persist(payer2);
+    testEntityManager.persist(balance);
+    testEntityManager.persist(balance2);
+    testEntityManager.persist(transaction);
+    testEntityManager.persist(transactionToSkip);
+
+    assertThatThrownBy(() -> pointsService.spendPoints(user.getUserId(), new UserSpendRequest(10L)))
+        .isInstanceOf(InvalidTransactionException.class)
+        .hasMessageContaining(String.valueOf(10L));
   }
 
   @Test

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.transaction.InvalidTransactionException;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import pointsservice.model.entity.BalanceEntity;
 import pointsservice.model.entity.BalanceId;
@@ -77,16 +79,15 @@ public class PointsService {
         .build();
   }
 
-  public Set<UserSpendResponse> spendPoints(
-      final Long userId,
-      final UserSpendRequest userSpendRequest
-  ) {
+  @SneakyThrows
+  public Set<UserSpendResponse> spendPoints(final Long userId, final UserSpendRequest userSpendRequest) {
     final List<TransactionEntity> transactions = userRepository.getById(userId)
         .getTransactions()
         .stream()
         .sorted(Comparator
             .comparing(TransactionEntity::getTimestamp)
             .thenComparing(TransactionEntity::getTransactionPoints)
+            .thenComparing(transactionEntity -> transactionEntity.getBalance().getPointBalance(), Comparator.reverseOrder())
         ).collect(Collectors.toList());
 
     final Map<String, Long> payerDeductions = new HashMap<>();
@@ -107,12 +108,14 @@ public class PointsService {
             balance.getPayer().getPayerName(),
             payerDeductions.getOrDefault(balance.getPayer().getPayerName(), 0L) - deductionAmount
         );
-        if (pointsRemaining == deductionAmount) {
+        if (pointsRemaining == 0) {
           break;
         }
       }
     }
-
+    if (pointsRemaining > 0) {
+      throw new InvalidTransactionException(String.format("Insufficient funds for requested %d points", userSpendRequest.getPoints()));
+    }
     balanceRepository.saveAll(balancesToUpdate);
     return payerDeductions.entrySet().stream()
         .map(entry -> new UserSpendResponse(entry.getKey(), entry.getValue()))
