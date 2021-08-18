@@ -12,6 +12,10 @@ public class OpenApiConfiguration {
   @Bean
   @Generated
   public OpenAPI openApi() {
-    return new OpenAPI().info(new Info().title("Points Service (Fetch Challenge)"));
+    return new OpenAPI()
+        .info(new Info()
+            .title("Points Service (Fetch Challenge)")
+            .description("Default valid userId's: 0,1,2,3,4,5 ----- Default valid payer names: DANNON, UNILEVER, MILLER_COORS")
+        );
   }
 }

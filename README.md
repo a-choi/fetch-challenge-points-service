@@ -20,10 +20,11 @@ From command line/terminal (bash, zsh, etc):
    
 
 3) If using Docker:
-   - `docker build -t <tag_name> .`
-   - `docker run --run -p 8080:8080 demo`
-   - This builds an image, make sure to delete via Docker Desktop UI or cli when finished to free memory 
-      - `docker rmi <tag_name>:latest`
+   - `docker build -t <some_tag_name> .`
+   - `docker run --rm -p 8080:8080 <some_tag_name>`
+      - `--rm` tears down container when run exits 
+   - This builds an image ~500MB, make sure to delete via Docker Desktop UI or cli when finished to free memory 
+      - `docker rmi <some_tag_name>:latest`
    
 
 4) If using Maven & JDK11:
@@ -43,7 +44,7 @@ From command line/terminal (bash, zsh, etc):
 
 6) To view & manage the underlying database in a console, navigate to `http:localhost:8080/h2-console` in a browser
    - database url: `jdbc:h2:mem:points_db`
-   - username: `dbuser` (no password)
+   - username: `sa` (no password)
 
 ---
 

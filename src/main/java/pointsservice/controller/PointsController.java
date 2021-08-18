@@ -5,9 +5,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
 import java.util.Set;
@@ -44,6 +41,7 @@ public class PointsController {
   }
 
   @PostMapping
+  @Operation(summary = "Add Transaction")
   public TransactionResponse addTransaction(
       @Parameter(in = ParameterIn.PATH, example = "0")
       @PathVariable(required = false) final Long userId,
@@ -54,6 +52,7 @@ public class PointsController {
 
   @SneakyThrows
   @PatchMapping
+  @Operation(summary = "Spend Points")
   public Set<UserSpendResponse> spendPoints(
       @Parameter(in = ParameterIn.PATH, example = "0")
       @PathVariable(required = false) final Long userId,
@@ -63,6 +62,7 @@ public class PointsController {
   }
 
   @GetMapping
+  @Operation(summary = "Get Points Balance")
   public PointsBalanceResponse getPointsBalance(@Parameter(in = ParameterIn.PATH, example = "0") @PathVariable(required = false) final Long userId) {
     return pointsService.getPointsBalance(Objects.requireNonNullElse(userId, DEFAULT_USER_ID));
   }
