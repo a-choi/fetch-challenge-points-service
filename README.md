@@ -33,11 +33,11 @@ From command line/terminal (bash, zsh, etc):
    - Alternatively, `mvn spring-boot:run`
    
 
-5) Access service exposed at `http:localhost:8080/points/user` with an HTTP client
+5) Accessing the service:
+   - Any HTTP client request to `http:localhost:8080/points/user`
+   - For HTTP methods / request specifications, please view `http://localhost:8080/demo` containing API documentation  
    - Alternatively you can use the [OpenAPI](https://swagger.io/docs/specification/about/) integration in-browser to test the API
-      - (OpenAPI describes this service in an interactive UI) 
-      - Navigate to `http://localhost:8080/demo` to access 
-
+      - Navigate to `http://localhost:8080/demo` to send requests from interactive UI
 
 5) CTRL + C to quit
 
