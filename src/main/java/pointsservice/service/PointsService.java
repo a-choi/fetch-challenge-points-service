@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.transaction.InvalidTransactionException;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
+import pointsservice.error.model.InsufficientBalanceException;
 import pointsservice.model.entity.BalanceEntity;
 import pointsservice.model.entity.BalanceId;
 import pointsservice.model.entity.PayerEntity;
@@ -114,7 +114,7 @@ public class PointsService {
       }
     }
     if (pointsRemaining > 0) {
-      throw new InvalidTransactionException(String.format("Insufficient funds for requested %d points", userSpendRequest.getPoints()));
+      throw new InsufficientBalanceException(String.format("Insufficient funds for requested %d points", userSpendRequest.getPoints()));
     }
     balanceRepository.saveAll(balancesToUpdate);
     return payerDeductions.entrySet().stream()

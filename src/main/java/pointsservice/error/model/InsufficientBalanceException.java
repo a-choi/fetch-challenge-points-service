@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
-public class InvalidTransactionException extends Exception {
+public class InsufficientBalanceException extends Exception {
 
   private final String message;
 }

@@ -8,13 +8,13 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
-import javax.transaction.InvalidTransactionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
+import pointsservice.error.model.InsufficientBalanceException;
 import pointsservice.model.entity.BalanceEntity;
 import pointsservice.model.entity.BalanceId;
 import pointsservice.model.entity.PayerEntity;
@@ -198,7 +198,7 @@ class PointsServiceIntegrationTest {
   }
 
   @Test
-  void spendPoints_PointsRemainingFromDeductions_ThrowsInvalidTransactionException() {
+  void spendPoints_PointsRemainingFromDeductions_ThrowsInsufficientBalanceException() {
     final UserEntity user = UserEntity.builder().build();
     final PayerEntity payer = PayerEntity.builder().payerName("payerName").build();
     final PayerEntity payer2 = PayerEntity.builder().payerName("payer2").build();
@@ -223,7 +223,7 @@ class PointsServiceIntegrationTest {
     testEntityManager.persist(transactionToSkip);
 
     assertThatThrownBy(() -> pointsService.spendPoints(user.getUserId(), new UserSpendRequest(10L)))
-        .isInstanceOf(InvalidTransactionException.class)
+        .isInstanceOf(InsufficientBalanceException.class)
         .hasMessageContaining(String.valueOf(10L));
   }
 
