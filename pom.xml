@@ -16,6 +16,7 @@
   <description>fetch-challenge-points-service</description>
   <properties>
     <java.version>11</java.version>
+    <springdoc.version>1.5.9</springdoc.version>
   </properties>
   <dependencies>
     <dependency>
@@ -50,6 +51,17 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-ui</artifactId>
+      <version>${springdoc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-data-rest</artifactId>
+      <version>${springdoc.version}</version>
+    </dependency>
+
   </dependencies>
   <build>
     <plugins>

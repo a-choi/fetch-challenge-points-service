@@ -2,6 +2,13 @@ package pointsservice.controller;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
 import java.util.Set;
 import javax.validation.Valid;
@@ -20,6 +27,7 @@ import pointsservice.model.response.TransactionResponse;
 import pointsservice.model.response.UserSpendResponse;
 import pointsservice.service.PointsService;
 
+@Tag(name = "API")
 @RestController
 @RequestMapping(
     value = {"/points/user/{userId}", "/points/user"},
@@ -37,6 +45,7 @@ public class PointsController {
 
   @PostMapping
   public TransactionResponse addTransaction(
+      @Parameter(in = ParameterIn.PATH, example = "0")
       @PathVariable(required = false) final Long userId,
       @Valid @RequestBody final TransactionRequest transactionRequest
   ) {
@@ -46,6 +55,7 @@ public class PointsController {
   @SneakyThrows
   @PatchMapping
   public Set<UserSpendResponse> spendPoints(
+      @Parameter(in = ParameterIn.PATH, example = "0")
       @PathVariable(required = false) final Long userId,
       @Valid @RequestBody final UserSpendRequest userSpendRequest
   ) {
@@ -53,7 +63,7 @@ public class PointsController {
   }
 
   @GetMapping
-  public PointsBalanceResponse getPointsBalance(@PathVariable(required = false) final Long userId) {
+  public PointsBalanceResponse getPointsBalance(@Parameter(in = ParameterIn.PATH, example = "0") @PathVariable(required = false) final Long userId) {
     return pointsService.getPointsBalance(Objects.requireNonNullElse(userId, DEFAULT_USER_ID));
   }
 }

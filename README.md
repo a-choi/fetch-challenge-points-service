@@ -33,7 +33,9 @@ From command line/terminal (bash, zsh, etc):
    
 
 5) Access service exposed at `http:localhost:8080/points/user` with an HTTP client
-   - TODO OpenAPI try it out ?
+   - Alternatively you can use the [OpenAPI](https://swagger.io/docs/specification/about/) integration in-browser to test the API
+      - (OpenAPI describes this service in an interactive UI) 
+      - Navigate to `http://localhost:8080/demo` to access 
 
 
 5) CTRL + C to quit
@@ -60,6 +62,7 @@ From command line/terminal (bash, zsh, etc):
 
 3) API base path is `/points/user/{userId}`
    - `userId` is optional, when not provided will use a default user
+      - See "_Bad Requests_" below
    - See `src/main/resources/schema.sql` and `src/main/resources/data.sql` for schema and pre-loaded test data, respectively
 
 
